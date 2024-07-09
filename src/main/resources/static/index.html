@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pastebin</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1>Pastebin</h1>
+    <form id="pasteForm">
+        <div class="form-group">
+            <label for="userId">User ID:</label>
+            <select id="userId" name="userId" required>
+                <option value="1">User 1</option>
+                <option value="2">User 2</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" required>
+        </div>
+        <div class="form-group">
+            <label for="content">Content:</label>
+            <textarea id="content" name="content" required></textarea>
+        </div>
+        <button type="submit">Create Paste</button>
+    </form>
+    <a href="view-pastes.html">View Pastes</a>
+</div>
+
+<script>
+        $(document).ready(function() {
+            $('#pasteForm').submit(function(event) {
+                event.preventDefault();
+
+                var pasteData = {
+                    title: $('#title').val(),
+                    content: $('#content').val(),
+                    userId: $('#userId').val()
+                };
+
+                $.ajax({
+                    url: 'http://localhost:8080/api/pastes',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(pasteData),
+                    success: function(response) {
+                        alert('Paste created successfully!');
+                        $('#pasteForm')[0].reset();
+                    },
+                    error: function(error) {
+                        console.log('Error creating paste:', error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

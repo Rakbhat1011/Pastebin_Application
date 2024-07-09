@@ -1,0 +1,123 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Pastes</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<div class="container">
+  <h1>View Pastes</h1>
+  <div class="form-group">
+    <label for="userIdSelect">Select User ID:</label>
+    <select id="userIdSelect" name="userIdSelect" required>
+      <option value="1">User 1</option>
+      <option value="2">User 2</option>
+    </select>
+    <button id="fetchPastesButton">Fetch Pastes</button>
+  </div>
+  <div id="pastesContainer"></div>
+
+  <div id="updateFormContainer" style="display: none;">
+    <h2>Update Paste</h2>
+    <form id="updatePasteForm">
+      <input type="hidden" id="updateId">
+      <div class="form-group">
+        <label for="updateTitle">New Title:</label>
+        <input type="text" id="updateTitle" name="title" required>
+      </div>
+      <div class="form-group">
+        <label for="updateContent">New Content:</label>
+        <textarea id="updateContent" name="content" required></textarea>
+      </div>
+      <button type="submit">Update Paste</button>
+    </form>
+  </div>
+  <a href="index.html">Create New Paste</a>
+</div>
+
+<script>
+        $(document).ready(function() {
+            $('#fetchPastesButton').click(function() {
+                var userId = $('#userIdSelect').val();
+
+                $.ajax({
+                    url: 'http://localhost:8080/api/pastes?userId=' + userId,
+                    type: 'GET',
+                    success: function(data) {
+                        $('#pastesContainer').empty();
+                        data.forEach(function(paste) {
+                            $('#pastesContainer').append(
+                                '<div>' +
+                                '<h3>' + paste.title + '</h3>' +
+                                '<p>' + paste.content + '</p>' +
+                                '<button onclick="deletePaste(' + paste.id + ')">Delete</button>' +
+                                '<button onclick="showUpdateForm(' + paste.id + ', \'' + paste.title + '\', \'' + paste.content + '\')">Update</button>' +
+                                '</div>'
+                            );
+                        });
+                    },
+                    error: function(error) {
+                        console.log('Error fetching pastes:', error);
+                    }
+                });
+            });
+
+            // Form submission for updating paste
+            $('#updatePasteForm').submit(function(event) {
+                event.preventDefault();
+
+                var updatedPasteData = {
+                    title: $('#updateTitle').val(),
+                    content: $('#updateContent').val(),
+                    userId: $('#userIdSelect').val()
+                };
+
+                var pasteId = $('#updateId').val();
+
+                $.ajax({
+                    url: 'http://localhost:8080/api/pastes/' + pasteId,
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(updatedPasteData),
+                    success: function(response) {
+                        alert('Paste updated successfully!');
+                        $('#updateFormContainer').hide();
+                        $('#updatePasteForm')[0].reset();
+                        location.reload(); // Refresh the page
+                    },
+                    error: function(error) {
+                        console.log('Error updating paste:', error);
+                    }
+                });
+            });
+        });
+
+        // Delete paste function
+        function deletePaste(id) {
+            $.ajax({
+                url: 'http://localhost:8080/api/pastes/' + id,
+                type: 'DELETE',
+                success: function(response) {
+                    alert('Paste deleted successfully!');
+                    location.reload(); // Refresh the page
+                },
+                error: function(error) {
+                    console.log('Error deleting paste:', error);
+                }
+            });
+        }
+
+        // Show update form function
+        function showUpdateForm(id, title, content) {
+            $('#updateId').val(id);
+            $('#updateTitle').val(title);
+            $('#updateContent').val(content);
+            $('#updateFormContainer').show();
+        }
+    </script>
+</body>
+</html>
